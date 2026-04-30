@@ -59,9 +59,9 @@ for feature, score in importance.items():
 
 print("=" * 50)
 
-# ─────────────────────────────────────────────
-# SLIDE 6 — Accuracy & Precision on Test Set
-# ─────────────────────────────────────────────
+
+#Accuracy & Precision
+
 print("\n" + "=" * 58)
 print("  MODEL ACCURACY & PRECISION (held-out test set)")
 print("=" * 58)
