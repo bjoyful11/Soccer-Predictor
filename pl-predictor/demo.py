@@ -1,8 +1,3 @@
-"""
-demo.py — Presentation demo for the PL Match Predictor
-Each section is self-contained and can be screenshotted for slides.
-"""
-
 import joblib
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, classification_report
@@ -47,76 +42,8 @@ def predict_match(home, away, home_rest=5, away_rest=5):
     return predicted, probs
 
 
-# ─────────────────────────────────────────────
-# SLIDE 1 — Single Match Prediction
-# ─────────────────────────────────────────────
-print("=" * 50)
-print("  SINGLE MATCH PREDICTION")
-print("=" * 50)
+#Feature Importance
 
-home_team = "Arsenal FC"
-away_team = "Chelsea FC"
-
-result, probs = predict_match(home_team, away_team)
-
-print(f"\n  {home_team}  vs  {away_team}\n")
-print(f"  Home Win  : {probs[0]*100:.1f}%")
-print(f"  Draw      : {probs[1]*100:.1f}%")
-print(f"  Away Win  : {probs[2]*100:.1f}%")
-print(f"\n  Prediction: {RESULT_LABELS[result]}")
-print("=" * 50)
-
-
-# ─────────────────────────────────────────────
-# SLIDE 2 — Batch Predictions (classic matchups)
-# ─────────────────────────────────────────────
-print("\n" + "=" * 60)
-print("  BATCH PREDICTIONS — CLASSIC PL MATCHUPS")
-print("=" * 60)
-
-fixtures = [
-    ("Manchester City FC",  "Liverpool FC"),
-    ("Arsenal FC",          "Tottenham Hotspur FC"),
-    ("Chelsea FC",          "Manchester United FC"),
-    ("Newcastle United FC", "Aston Villa FC"),
-    ("Liverpool FC",        "Manchester City FC"),
-]
-
-print(f"\n  {'Home':<28} {'Away':<28} {'Prediction'}")
-print(f"  {'-'*28} {'-'*28} {'-'*15}")
-
-for home, away in fixtures:
-    result, _ = predict_match(home, away)
-    print(f"  {home:<28} {away:<28} {RESULT_LABELS[result]}")
-
-print("=" * 60)
-
-
-# ─────────────────────────────────────────────
-# SLIDE 3 — Full Probability Breakdown (one match)
-# ─────────────────────────────────────────────
-print("\n" + "=" * 50)
-print("  PROBABILITY BREAKDOWN")
-print("=" * 50)
-
-home_team = "Liverpool FC"
-away_team = "Manchester City FC"
-
-result, probs = predict_match(home_team, away_team)
-
-print(f"\n  {home_team}  vs  {away_team}\n")
-
-for label, prob in zip(["Home Win", "Draw", "Away Win"], probs):
-    bar = "█" * int(prob * 30)
-    print(f"  {label:<10} {bar:<30} {prob*100:.1f}%")
-
-print(f"\n  Prediction: {RESULT_LABELS[result]}")
-print("=" * 50)
-
-
-# ─────────────────────────────────────────────
-# SLIDE 4 — Feature Importance
-# ─────────────────────────────────────────────
 print("\n" + "=" * 50)
 print("  FEATURE IMPORTANCE")
 print("  (what the model weighs most heavily)")
@@ -131,34 +58,6 @@ for feature, score in importance.items():
     print(f"  {feature:<20} {bar:<30} {score:.3f}")
 
 print("=" * 50)
-
-
-# ─────────────────────────────────────────────
-# SLIDE 5 — What goes into a prediction (raw input)
-# ─────────────────────────────────────────────
-print("\n" + "=" * 50)
-print("  WHAT THE MODEL SEES (raw input features)")
-print("=" * 50)
-
-home_team = "Arsenal FC"
-away_team = "Manchester City FC"
-
-h = get_team(home_team)
-a = get_team(away_team)
-
-print(f"\n  Match: {home_team} vs {away_team}\n")
-print(f"  {'Feature':<20} {'Home':>10} {'Away':>10}")
-print(f"  {'-'*20} {'-'*10} {'-'*10}")
-print(f"  {'Team code':<20} {int(h['home_code']):>10} {int(a['away_code']):>10}")
-print(f"  {'Form (pts/game)':<20} {h['home_form']:>10.2f} {a['away_form']:>10.2f}")
-print(f"  {'Avg goals/game':<20} {h['home_avg_goals']:>10.2f} {a['away_avg_goals']:>10.2f}")
-print(f"  {'Rest days':<20} {'5':>10} {'5':>10}")
-
-result, probs = predict_match(home_team, away_team)
-print(f"\n  Prediction → {RESULT_LABELS[result]}  "
-      f"({probs[0]*100:.1f}% / {probs[1]*100:.1f}% / {probs[2]*100:.1f}%)")
-print("=" * 50)
-
 
 # ─────────────────────────────────────────────
 # SLIDE 6 — Accuracy & Precision on Test Set
@@ -196,5 +95,47 @@ report = classification_report(
 for label in ["Home Win", "Draw", "Away Win"]:
     r = report[label]
     print(f"  {label:<12} {r['precision']*100:>9.1f}% {r['recall']*100:>9.1f}% {r['f1-score']*100:>9.1f}% {int(r['support']):>10}")
+
+print("=" * 58)
+
+# Live Predictions
+print("\n" + "=" * 50)
+print("  LIVE PREDICTION")
+print("=" * 50)
+
+teams = sorted(team_stats["home_team"].tolist())
+team_map = {i: name for i, name in enumerate(teams, 1)}
+
+print("\n  Available teams:")
+for i, t in team_map.items():
+    print(f"    {i:>2}. {t}")
+
+def pick_team(prompt):
+    while True:
+        raw = input(prompt).strip()
+        try:
+            n = int(raw)
+            if n in team_map:
+                return team_map[n]
+            print(f"  Please enter a number between 1 and {len(team_map)}.")
+        except ValueError:
+            print("  Please enter a number.")
+
+print()
+while True:
+    home_input = pick_team("  Home team number: ")
+    away_input = pick_team("  Away team number: ")
+
+    result, probs = predict_match(home_input, away_input)
+    print(f"\n  {home_input}  vs  {away_input}\n")
+    print(f"  Home Win  : {probs[0]*100:.1f}%")
+    print(f"  Draw      : {probs[1]*100:.1f}%")
+    print(f"  Away Win  : {probs[2]*100:.1f}%")
+    print(f"\n  Prediction: {RESULT_LABELS[result]}")
+
+    print()
+    again = input("  Predict another match? (y/n): ").strip().lower()
+    if again != "y":
+        break
 
 print("=" * 58)
